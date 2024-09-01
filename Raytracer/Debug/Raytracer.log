@@ -1,0 +1,10 @@
+﻿  window.c
+E:\C++\Raytracer\Raytracer\window.c(27,25): warning C4133: =: несовместимые типы - из "char *" в "LPCWSTR"
+E:\C++\Raytracer\Raytracer\window.c(31,15): warning C4133: функция: несовместимые типы - из "char [7]" в "LPCWSTR"
+E:\C++\Raytracer\Raytracer\window.c(31,15): warning C4133: функция: несовместимые типы - из "const char *" в "LPCWSTR"
+E:\C++\Raytracer\Raytracer\window.c(105,39): warning C4244: функция: преобразование "int" в "float", возможна потеря данных
+E:\C++\Raytracer\Raytracer\window.c(105,42): warning C4244: функция: преобразование "int" в "float", возможна потеря данных
+E:\C++\Raytracer\Raytracer\window.c(106,65): warning C4305: функция: усечение из "double" в "float"
+E:\C++\Raytracer\Raytracer\window.c(92,6): warning C4101: hdc: неиспользованная локальная переменная
+E:\C++\Raytracer\Raytracer\window.c(93,14): warning C4101: ps: неиспользованная локальная переменная
+  Raytracer.vcxproj -> E:\C++\Raytracer\Debug\Raytracer.exe
