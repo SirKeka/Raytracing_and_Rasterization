@@ -1,10 +1,17 @@
 #include "window.h"
 #include "Raytracer.h"
 
+typedef struct {
+	unsigned short width;
+	unsigned short height;
+	unsigned char* buffer;
+} Canvas;
+
 typedef struct WinState {
 	HINSTANCE hInstance;
 	HWND hwnd;			// Дескриптор окна
 	MSG msg;
+	Canvas canvas;
 } WinState;
 
 static WinState state;
@@ -45,7 +52,12 @@ void WinCreate(const char* ApplicationName, int x, int y, int width, int height)
 	int ShouldActivate = 1;  // TODO: ���� ���� �� ������ ��������� ����, ��� ������ ���� false.
 	int ShowWindowCommandFlags = ShouldActivate ? SW_SHOW : SW_SHOWNOACTIVATE;
 	ShowWindow(state.hwnd, ShowWindowCommandFlags);
-	
+
+	RECT rect;
+	GetClientRect(state.hwnd, &rect);
+	state.canvas.width = rect.right;
+	state.canvas.height = rect.bottom;
+	state.canvas.buffer = malloc(rect.right * rect.bottom * 4);
 }
 
 void WinDestroy()
@@ -66,20 +78,40 @@ void WinMessage()
 	}
 }
 
-void PutPixel(int x, int y, COLORREF color)
+static DrawPixels(HDC hdc)
 {
-	RECT rect;
-	GetClientRect(state.hwnd, &rect);
+	if (!hdc) {
+		hdc = GetDC(state.hwnd);
+	}
+	BITMAPINFO BitMapInfo;
+	ZeroMemory(&BitMapInfo, sizeof(BitMapInfo));
+	BitMapInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	BitMapInfo.bmiHeader.biWidth = state.canvas.width;
+	BitMapInfo.bmiHeader.biHeight = -state.canvas.height;
+	BitMapInfo.bmiHeader.biPlanes = 1;
+	BitMapInfo.bmiHeader.biBitCount = 32; // 32 бита на пиксель (RGBA)
+	BitMapInfo.bmiHeader.biCompression = BI_RGB;
 
-	int nx = rect.right / 2 + x;
-	int ny = rect.bottom / 2 - y - 1;
+	StretchDIBits(hdc, 0, 0, state.canvas.width, state.canvas.height,
+		0, 0, state.canvas.width, state.canvas.height,
+		state.canvas.buffer, &BitMapInfo, DIB_RGB_COLORS, SRCCOPY);
+}
 
-	if (nx < 0 || nx >= rect.right || ny < 0 || ny >= rect.bottom) {
+void PutPixel(int x, int y, Color color)
+{
+	x = state.canvas.width / 2 + x;
+	y = state.canvas.height / 2 - y - 1;
+
+	if (x < 0 || x >= state.canvas.width || y < 0 || y >= state.canvas.height) {
 		return;
 	}
-	HDC hdc = GetDC(state.hwnd);
-	SetPixel(hdc, nx, ny, color);
-	ReleaseDC(state.hwnd, hdc);
+	
+	Canvas canvas = state.canvas;
+	int offset = 4 * (x + canvas.width * y);
+	canvas.buffer[offset++] = color.b;
+	canvas.buffer[offset++] = color.g;
+	canvas.buffer[offset++] = color.r;
+	canvas.buffer[offset++] = color.a;
 }
 
 HWND WinGetHWND()
@@ -91,29 +123,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
-	RECT rect;
+	// RECT rect;
 	switch (iMsg)
 	{
 	case WM_CREATE:
 		// PlaySound(L"hellowin.wav", NULL, SND_FILENAME | SND_ASYNC);
 		return 0;
 	case WM_PAINT:
-		// hdc = BeginPaint(hwnd, &ps);
-		GetClientRect(state.hwnd, &rect);
-		for (int x = -rect.right / 2; x < rect.right / 2; x++) {
-			for (int y = -rect.bottom / 2; y < rect.bottom / 2; y++) {
-				Vec3 direction = CanvasToViewport(x, y);
-				COLORREF color = TraceRay((Vec3) { 0, 0, 0 }, direction, 1, FLOAT_MAX);
-				PutPixel(x, y, color);
-			}
-		}
-		ValidateRect(state.hwnd, &rect);
+		hdc = BeginPaint(hwnd, &ps);
+		
+		DrawPixels(hdc);
+		
+		//ValidateRect(state.hwnd, &rect);
 		/*GetClientRect(hwnd, &rect);
 		DrawText(hdc, L"Hello, Windows 95!", -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);*/
-		// EndPaint(hwnd, &ps);
+		EndPaint(hwnd, &ps);
 		return 0;
 	case WM_DESTROY:
 		PostQuitMessage(0);
+		free(state.canvas.buffer);
 		return 0;
 	}
 	return DefWindowProc(hwnd, iMsg, wParam, lParam);

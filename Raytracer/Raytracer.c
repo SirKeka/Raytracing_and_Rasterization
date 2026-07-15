@@ -9,13 +9,13 @@ typedef struct Scene {
 	int ViewportSize;
 	int ProjectionPlaneZ;
 	Vec3 CameraPosition;
-	COLORREF BackgroundColor;
+	Color BackgroundColor;
 	Sphere spheres[4];
 } Scene;
 
 static Scene state;
 
-int SceneCreate(int ViewportSize, int ProjectionPlaneZ, Vec3 CameraPosition, COLORREF BackgroundColor, Sphere spheres[])
+int SceneCreate(int ViewportSize, int ProjectionPlaneZ, Vec3 CameraPosition, Color BackgroundColor, Sphere spheres[])
 {
 	state.ViewportSize = ViewportSize;
 	state.ProjectionPlaneZ = ProjectionPlaneZ;
@@ -61,7 +61,7 @@ void IntersectRaySphere(Vec3 origin, Vec3 direction, Sphere sphere, float OutTs[
 	OutTs[1] = (-k2 - sqrt(discriminant)) / 2 * k1;
 }
 
-COLORREF TraceRay(Vec3 origin, Vec3 direction, float min_t, float max_t)
+Color TraceRay(Vec3 origin, Vec3 direction, float min_t, float max_t)
 {
 	float ClosestT = FLOAT_MAX;
 	Sphere* ClosestSphere = NULL;
@@ -80,7 +80,7 @@ COLORREF TraceRay(Vec3 origin, Vec3 direction, float min_t, float max_t)
 	}
 
 	if (ClosestSphere == NULL) {
-		return RGB(255, 255, 255);
+		return (Color) { 255, 255, 255, 255 };
 	}
 
 	return ClosestSphere->color;
