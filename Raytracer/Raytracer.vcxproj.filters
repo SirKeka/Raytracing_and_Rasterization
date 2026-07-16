@@ -21,9 +21,6 @@
     <ClCompile Include="window.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="vector3.c">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="Raytracer.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
@@ -32,10 +29,13 @@
     <ClInclude Include="window.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="vector3.h">
+    <ClInclude Include="math.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="Raytracer.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="structs.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

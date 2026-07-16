@@ -1,11 +1,10 @@
 #pragma once
 #include <windows.h>
+#include "structs.h"
 
-#define FLOAT_MAX 3.402823466E+38
+#define FLOAT_MAX 3.402823466E+38F
 
-typedef struct Color { unsigned char r, g, b, a; } Color;
-
-void WinCreate(const char* ApplicationName, int x, int y, int width, int height);
+void WinCreate(LPCWSTR ApplicationName, int x, int y, int width, int height);
 
 void WinDestroy(void);
 

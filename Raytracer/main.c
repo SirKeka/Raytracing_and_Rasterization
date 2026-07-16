@@ -5,24 +5,31 @@
 
 int main()
 {
-	WinCreate("Raytracer", 0, 0, 616, 639);
+	WinCreate(L"Raytracer", 0, 0, 616, 639);
+
+	Scene scene;
+	scene.ViewportSize = 1;
+	scene.ProjectionPlaneZ = 1;
+	scene.CameraPosition = (Vec3){ 0, 0, 0 };
+	scene.BackgroundColor = (Color){ 255, 255, 255 };
+	scene.SphereCount = 4;
 
 	Sphere spheres[4] = {
-		(Sphere) { (Vec3) { 0,    -1, 3 },	  1, (Color){ 255,   0,   0, 255 } },
-		(Sphere) { (Vec3) { -2,    0, 4 },	  1, (Color){ 0,   255,   0, 255 } },
-		(Sphere) { (Vec3) { 2,     0, 4 },	  1, (Color){ 0,     0, 255, 255 } },
-		(Sphere) { (Vec3) { 0, -5001, 0 }, 5000, (Color){ 255, 255,   0, 255 } }
+		(Sphere) { (Vec3) { 0.F,    -1.F, 3.F },	1.F, (Color){ 255,   0,    0 }, 500 },
+		(Sphere) { (Vec3) { -2.F,    0.F, 4.F },	1.F, (Color){ 0,   255,    0 }, 10 },
+		(Sphere) { (Vec3) { 2.F,     0.F, 4.F },	1.F, (Color){ 0,      0, 255 }, 500 },
+		(Sphere) { (Vec3) { 0.F, -5001.F, 0.F }, 5000.F, (Color){ 255, 255,   0 }, 1000 }
 	};
+	scene.spheres = spheres;
+	scene.LightCount = 3;
+	Light lights[3] = {
+		(Light){ Light_Type_Ambient,     0.2F },
+		(Light){ Light_Type_Point,		 0.6F, (Vec3){ 2.F, 1.F, 0.F } },
+		(Light){ Light_Type_Directional, 0.2F, (Vec3){ 1.F, 4.F, 4.F } }
+	};
+	scene.lights = lights;
 
-	SceneCreate(1, 1, (Vec3) { 0, 0, 0 }, (Color) { 255, 255, 255, 255 }, spheres);
-
-	for (int x = -600 / 2; x < 600 / 2; x++) {
-		for (int y = -600 / 2; y < 600 / 2; y++) {
-			Vec3 direction = CanvasToViewport(x, y);
-			Color color = TraceRay((Vec3) { 0, 0, 0 }, direction, 1, FLOAT_MAX);
-			PutPixel(x, y, color);
-		}
-	}
+	DrawScene(&scene);
 
 	/* Функция UpdateWindow обновляет клиентскую область указанного окна, отправляя в окно сообщение WM_PAINT,
 	 * если область обновления окна не пуста. Функция отправляет сообщение WM_PAINT непосредственно в оконную
@@ -33,10 +40,7 @@ int main()
 	// главный цикл приложения
 	while (TRUE) {
 		WinMessage();
-
 	}
-
-	
 
 	return 0;
 }

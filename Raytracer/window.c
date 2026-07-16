@@ -18,8 +18,8 @@ static WinState state;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-void WinCreate(const char* ApplicationName, int x, int y, int width, int height) {
-	static char szAppName[] = "Window";
+void WinCreate(LPCWSTR ApplicationName, int x, int y, int width, int height) {
+	WCHAR szAppName[] = L"Window";
 	WNDCLASSEX wndclass;
 	wndclass.cbSize = sizeof(wndclass);
 	wndclass.style = CS_HREDRAW | CS_VREDRAW;
@@ -111,7 +111,7 @@ void PutPixel(int x, int y, Color color)
 	canvas.buffer[offset++] = color.b;
 	canvas.buffer[offset++] = color.g;
 	canvas.buffer[offset++] = color.r;
-	canvas.buffer[offset++] = color.a;
+	canvas.buffer[offset++] = 0xff;
 }
 
 HWND WinGetHWND()

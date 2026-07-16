@@ -143,12 +143,12 @@
   <ItemGroup>
     <ClCompile Include="main.c" />
     <ClCompile Include="Raytracer.c" />
-    <ClCompile Include="vector3.c" />
     <ClCompile Include="window.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="structs.h" />
     <ClInclude Include="Raytracer.h" />
-    <ClInclude Include="vector3.h" />
+    <ClInclude Include="math.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
