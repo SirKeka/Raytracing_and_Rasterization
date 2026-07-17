@@ -39,12 +39,38 @@ static void IntersectRaySphere(Vec3 origin, Vec3 direction, Sphere sphere, float
 	OutTs[1] = (-k2 - sqrtf(discriminant)) / (2.F * k1);
 }
 
-static float ComputeLighting(Vec3 point, Vec3 normal, Vec3 view, float specular, unsigned lightCount, Light* lights)
+typedef struct {
+	Sphere* ClosestSphere;
+	float ClosestT;
+} Intersections;
+
+static Intersections ClosestIntersection(Vec3 origin, Vec3 direction, float min_t, float max_t, Scene* scene)
+{
+	float ClosestT = FLOAT_MAX;
+	Sphere* ClosestSphere = NULL;
+
+	for (size_t i = 0; i < scene->SphereCount; i++) {
+		float ts[2];
+		IntersectRaySphere(origin, direction, scene->spheres[i], ts);
+		if (ts[0] < ClosestT && min_t < ts[0] && ts[0] < max_t) {
+			ClosestT = ts[0];
+			ClosestSphere = &scene->spheres[i];
+		}
+		if (ts[1] < ClosestT && min_t < ts[1] && ts[1] < max_t) {
+			ClosestT = ts[1];
+			ClosestSphere = &scene->spheres[i];
+		}
+	}
+	return (Intersections) { ClosestSphere, ClosestT };
+}
+
+static float ComputeLighting(Vec3 point, Vec3 normal, Vec3 view, float specular, Scene* scene)
 {
 	float intensity = 0.F; // Интенсивность белого цвета
+	float t_max = 0.F;
 
-	for (size_t i = 0; i < lightCount; i++) {
-		Light light = lights[i];
+	for (size_t i = 0; i < scene->LightCount; i++) {
+		Light light = scene->lights[i];
 		if (light.type == Light_Type_Ambient) {
 			intensity += light.intensity;
 			continue;
@@ -53,8 +79,16 @@ static float ComputeLighting(Vec3 point, Vec3 normal, Vec3 view, float specular,
 		Vec3 L;
 		if (light.type == Light_Type_Point) {
 			L = Vec3_Sub(light.position, point);
+			t_max = 1.F;
 		} else {
 			L = light.position;
+			t_max = FLOAT_MAX;
+		}
+
+		// Тени
+		Intersections intersections = ClosestIntersection(point, L, 0.001F, t_max, scene);
+		if (intersections.ClosestSphere != NULL) {
+			continue;
 		}
 
 		// Diffuse
@@ -79,34 +113,20 @@ static float ComputeLighting(Vec3 point, Vec3 normal, Vec3 view, float specular,
 // Проводит луч по набору сфер в сцене.
 static Color TraceRay(Vec3 origin, Vec3 direction, float min_t, float max_t, Scene* scene)
 {
-	float ClosestT = FLOAT_MAX;
-	Sphere* ClosestSphere = NULL;
+	Intersections intersections = ClosestIntersection(origin, direction, min_t, max_t, scene);
 
-	for (size_t i = 0; i < scene->SphereCount; i++) {
-		float ts[2];
-		IntersectRaySphere(origin, direction, scene->spheres[i], ts);
-		if (ts[0] < ClosestT && min_t < ts[0] && ts[0] < max_t) {
-			ClosestT = ts[0];
-			ClosestSphere = &scene->spheres[i];
-		}
-		if (ts[1] < ClosestT && min_t < ts[1] && ts[1] < max_t) {
-			ClosestT = ts[1];
-			ClosestSphere = &scene->spheres[i];
-		}
-	}
-
-	if (ClosestSphere == NULL) {
+	if (intersections.ClosestSphere == NULL) {
 		return (Color) { 255, 255, 255 };
 	}
 
-	Vec3 point = Vec3_Add(origin, Vec3_Mul_Scalar(direction, ClosestT));
-	Vec3 normal = Vec3_Sub(point, ClosestSphere->center);
+	Vec3 point = Vec3_Add(origin, Vec3_Mul_Scalar(direction, intersections.ClosestT));
+	Vec3 normal = Vec3_Sub(point, intersections.ClosestSphere->center);
 	normal = Vec3_Mul_Scalar(normal, 1.F / Vec3_Length(normal));
 
 	Vec3 view = Vec3_Mul_Scalar(direction, -1.F);
-	float lighting = ComputeLighting(point, normal, view, ClosestSphere->specular, scene->LightCount, scene->lights);
+	float lighting = ComputeLighting(point, normal, view, intersections.ClosestSphere->specular, scene);
 
-	return Color_Mul_Scalar(ClosestSphere->color, lighting);
+	return Color_Mul_Scalar(intersections.ClosestSphere->color, lighting);
 }
 
 void DrawScene(Scene* scene)

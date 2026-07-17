@@ -68,14 +68,15 @@ void WinDestroy()
 	}
 }
 
-void WinMessage()
+unsigned WinMessage()
 {
 	MSG message;
-	if (PeekMessageA(&message, NULL, 0, 0, PM_REMOVE))
-	{
+	if (PeekMessageA(&message, NULL, 0, 0, PM_REMOVE)) {
+		if (message.message == WM_QUIT) return WM_QUIT;
 		TranslateMessage(&message);
 		DispatchMessage(&message);
 	}
+	return 0;
 }
 
 static DrawPixels(HDC hdc)

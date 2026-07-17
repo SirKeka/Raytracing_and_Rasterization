@@ -8,7 +8,7 @@ void WinCreate(LPCWSTR ApplicationName, int x, int y, int width, int height);
 
 void WinDestroy(void);
 
-void WinMessage(void);
+unsigned WinMessage(void);
 // The PutPixel() function.
 void PutPixel(int x, int y, Color color);
 
